@@ -24,7 +24,7 @@ jobs:
       - name: Build Android App
         run: |
           ls -la
-          gradle :android:build --no-daemon
+          gradle :android:app:build --no-daemon
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -72,7 +72,7 @@ jobs:
       
       - name: Run Android Tests
         run: |
-          gradle :android:test --no-daemon
+          gradle :android:app:test --no-daemon
       
       - name: Run Backend Tests
         run: |
