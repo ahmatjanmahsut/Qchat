@@ -15,6 +15,7 @@ import com.qchat.app.data.remote.api.GroupApi
 import com.qchat.app.data.remote.api.MessageApi
 import com.qchat.app.data.remote.api.SessionApi
 import com.qchat.app.data.remote.api.UserApi
+import com.qchat.app.data.remote.config.ServerConfigManager
 import com.qchat.app.data.repository.ContactRepository
 import com.qchat.app.data.repository.ContactRepositoryImpl
 import com.qchat.app.data.repository.GroupRepository
@@ -87,7 +88,11 @@ object DatabaseModule {
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://10.0.2.2:8080/" // Android模拟器访问本地后端
+    @Provides
+    @Singleton
+    fun provideServerConfigManager(@ApplicationContext context: Context): ServerConfigManager {
+        return ServerConfigManager(context)
+    }
 
     @Provides
     @Singleton
@@ -114,9 +119,9 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit {
+    fun provideRetrofit(okHttpClient: OkHttpClient, json: Json, serverConfigManager: ServerConfigManager): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(serverConfigManager.getBaseUrl())
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory())
             .build()

@@ -11,6 +11,8 @@
 - **网络**: Retrofit + OkHttp
 - **WebSocket**: OkHttp WebSocket
 - **依赖注入**: Hilt
+- **安全存储**: EncryptedSharedPreferences
+- **导航**: Jetpack Navigation Compose
 
 ## 后端
 

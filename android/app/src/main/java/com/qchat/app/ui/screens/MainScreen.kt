@@ -5,19 +5,28 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = "Qchat",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Qchat",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Button(onClick = { navController.navigate("settings") }) {
+                Text("设置")
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -43,5 +52,40 @@ fun MainScreen() {
             """.trimIndent(),
             style = MaterialTheme.typography.bodyMedium
         )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(4.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "服务器配置",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Text(
+                    text = "已实现动态服务器地址配置功能",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "- 支持自定义服务器地址和端口",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+                Text(
+                    text = "- 支持HTTP/HTTPS协议",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "- 连接测试功能",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "- 配置持久化存储",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
     }
 }
