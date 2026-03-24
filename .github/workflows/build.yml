@@ -24,6 +24,8 @@ jobs:
       - name: Build Android App
         run: |
           cd android
+          ls -la
+          chmod +x ./gradlew || true
           ./gradlew build --no-daemon
       
       - name: Upload APK
@@ -48,6 +50,8 @@ jobs:
       - name: Build Backend
         run: |
           cd backend
+          ls -la
+          chmod +x ./gradlew || true
           ./gradlew build --no-daemon
       
       - name: Upload Backend Artifact
@@ -73,9 +77,11 @@ jobs:
       - name: Run Android Tests
         run: |
           cd android
+          chmod +x ./gradlew || true
           ./gradlew test --no-daemon
       
       - name: Run Backend Tests
         run: |
           cd backend
+          chmod +x ./gradlew || true
           ./gradlew test --no-daemon
