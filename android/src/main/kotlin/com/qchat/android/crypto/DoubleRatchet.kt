@@ -340,34 +340,46 @@ class DoubleRatchet {
     }
 
     /**
-     * HKDF实现
+     * HKDF 密钥派生函数 (RFC 5869)
+     * 使用标准 HMAC-SHA256 实现
      */
     private fun hkdf(inputKeyMaterial: ByteArray, info: ByteArray): ByteArray {
-        // Extract
-        val hash = MessageDigest.getInstance("SHA-256")
-        val prk = hash.digest(inputKeyMaterial)
+        // Extract 阶段：PRK = HMAC-Hash(salt, IKM)
+        val salt = ByteArray(32)
+        java.security.SecureRandom().nextBytes(salt)
+        val prk = hmacSha256(salt, inputKeyMaterial)
 
-        // Expand
+        // Expand 阶段：OKM = T(1) | T(2) | T(3) | ...
         val outputLength = MESSAGE_KEY_LENGTH + CHAIN_KEY_LENGTH
-        val t = ByteArray(outputLength)
-        var offset = 0
+        val n = (outputLength + 31) / 32
+        val okm = ByteArray(outputLength)
+        
+        var t = ByteArray(0)
         var counter: Byte = 1
-
-        while (offset < outputLength) {
-            val hmacInput = ByteArray(hash.digest(prk).size + info.size + 1)
-            val prkDigest = hash.digest(prk)
-            System.arraycopy(prkDigest, 0, hmacInput, 0, prkDigest.size)
-            System.arraycopy(info, 0, hmacInput, prkDigest.size, info.size)
+        
+        for (i in 0 until n) {
+            // T(i) = HMAC-Hash(PRK, T(i-1) | info | i)
+            val hmacInput = ByteArray(t.size + info.size + 1)
+            System.arraycopy(t, 0, hmacInput, 0, t.size)
+            System.arraycopy(info, 0, hmacInput, t.size, info.size)
             hmacInput[hmacInput.size - 1] = counter
-
-            val output = hash.digest(hmacInput)
-            val bytesToCopy = min(output.size, outputLength - offset)
-            System.arraycopy(output, 0, t, offset, bytesToCopy)
-            offset += bytesToCopy
+            
+            t = hmacSha256(prk, hmacInput)
+            System.arraycopy(t, 0, okm, i * 32, minOf(32, outputLength - i * 32))
             counter++
         }
 
-        return t
+        return okm
+    }
+
+    /**
+     * HMAC-SHA256 实现
+     */
+    private fun hmacSha256(key: ByteArray, data: ByteArray): ByteArray {
+        val mac = javax.crypto.Mac.getInstance("HmacSHA256")
+        val secretKey = javax.crypto.spec.SecretKeySpec(key, "HmacSHA256")
+        mac.init(secretKey)
+        return mac.doFinal(data)
     }
 
     /**

@@ -18,6 +18,11 @@ private val conversationService = ConversationService()
 private val messageService = MessageService()
 
 /**
+ * Hash user ID for logging (privacy protection)
+ */
+private fun hashUserId(userId: String): String = userId.hashCode().toString(16)
+
+/**
  * Chat routes for conversations and messages
  */
 fun Route.chatRoutes() {
@@ -25,7 +30,7 @@ fun Route.chatRoutes() {
         // Get user's conversations
         authenticate("auth-jwt") {
             get {
-                logger.info("Get conversations request")
+                logger.debug("Get conversations request")
                 try {
                     val userId = getUserIdFromToken(call)
                     if (userId == null) {
@@ -563,17 +568,32 @@ fun Route.chatRoutes() {
 }
 
 /**
- * Extract user ID from JWT token in request
+ * Extract user ID from JWT token in request with proper validation
  */
 private fun getUserIdFromToken(call: ApplicationCall): String? {
     val authHeader = call.request.headers["Authorization"]
-    val token = authHeader?.replace("Bearer ", "")
+    val token = authHeader?.replace("Bearer ", "") ?: return null
 
-    return token?.let {
-        try {
-            JwtService.decodeToken(it)?.subject
-        } catch (e: Exception) {
-            null
+    return try {
+        // Use proper JWT verification instead of just decoding
+        val verifier = JwtService.makeVerifier()
+        val jwt = verifier.verify(token)
+        
+        // Check expiration
+        if (jwt.expiresAt < java.util.Date()) {
+            logger.warn("JWT token has expired")
+            return null
         }
+        
+        // Validate issuer
+        if (jwt.issuer != com.qchat.server.config.AppConfig.jwtIssuer) {
+            logger.warn("Invalid JWT issuer: ${jwt.issuer}")
+            return null
+        }
+        
+        jwt.subject
+    } catch (e: Exception) {
+        logger.error("JWT validation failed: ${e.message}")
+        null
     }
 }

@@ -32,7 +32,8 @@ object ChatWebSocketService {
             return
         }
 
-        logger.info("WebSocket connection established for user: $userId")
+        val userIdHash = userId.hashCode().toString(16)
+        logger.info("WebSocket connection established for user: $userIdHash")
 
         // Store connection
         connections[userId] = session
@@ -49,7 +50,7 @@ object ChatWebSocketService {
                         handleMessage(userId, text, session)
                     }
                     is Frame.Close -> {
-                        logger.info("WebSocket connection closed by user: $userId")
+                        logger.debug("WebSocket connection closed by user: $userIdHash")
                     }
                     else -> {
                         // Ignore other frames
@@ -57,7 +58,7 @@ object ChatWebSocketService {
                 }
             }
         } catch (e: Exception) {
-            logger.error("WebSocket error for user: $userId", e)
+            logger.error("WebSocket error for user: $userIdHash", e)
         } finally {
             // Remove connection
             connections.remove(userId)
@@ -65,25 +66,40 @@ object ChatWebSocketService {
             // Update user offline status
             UserService().updateUserOnlineStatus(userId, false)
 
-            logger.info("WebSocket connection removed for user: $userId")
+            logger.debug("WebSocket connection removed for user: $userIdHash")
         }
     }
 
     /**
-     * Extract user ID from WebSocket session
+     * Extract user ID from WebSocket session with proper validation
      */
     private fun extractUserIdFromSession(session: DefaultWebSocketServerSession): String? {
         // Get token from query parameters or headers
         val token = session.call.parameters["token"]
             ?: session.call.request.headers["Authorization"]?.replace("Bearer ", "")
+            ?: return null
 
-        return token?.let {
-            try {
-                val decoded = JwtService.decodeToken(it)
-                decoded?.subject
-            } catch (e: Exception) {
-                null
+        return try {
+            // Use proper JWT verification instead of just decoding
+            val verifier = JwtService.makeVerifier()
+            val jwt = verifier.verify(token)
+            
+            // Check expiration
+            if (jwt.expiresAt < java.util.Date()) {
+                logger.warn("WebSocket JWT token has expired")
+                return null
             }
+            
+            // Validate issuer
+            if (jwt.issuer != com.qchat.server.config.AppConfig.jwtIssuer) {
+                logger.warn("Invalid WebSocket JWT issuer: ${jwt.issuer}")
+                return null
+            }
+            
+            jwt.subject
+        } catch (e: Exception) {
+            logger.error("WebSocket JWT validation failed: ${e.message}")
+            null
         }
     }
 

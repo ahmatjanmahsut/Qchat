@@ -97,15 +97,16 @@ class X3DHKeyAgreement {
         // DH3 = DH(EKA, IKB)
         val dh3 = Curve.calculateAgreement(theirIdentityKey, ephemeralKeyPair.privateKey)
 
-        // DH4 = DH(EKA, PKB) - 如果有一性预密钥
-        val dh4 = if (theirPreKey != null) {
-            Curve.calculateAgreement(theirPreKey, ephemeralKeyPair.privateKey)
+        // 3. 组合 DH 输出
+        // 如果有一性预密钥，使用 4 个 DH 输出；否则使用 3 个 DH 输出
+        val combinedDHSecret = if (theirPreKey != null) {
+            // DH4 = DH(EKA, PKB)
+            val dh4 = Curve.calculateAgreement(theirPreKey, ephemeralKeyPair.privateKey)
+            combineDHOutputs(dh1, dh2, dh3, dh4)
         } else {
-            ByteArray(32) // 如果没有预密钥，使用零值
+            // 没有预密钥时，只使用 3 个 DH 输出（不使用零值）
+            combineDHOutputs(dh1, dh2, dh3)
         }
-
-        // 3. 组合DH输出
-        val combinedDHSecret = combineDHOutputs(dh1, dh2, dh3, dh4)
 
         // 4. 使用HKDF派生共享密钥
         val sharedSecret = hkdf(combinedDHSecret, myIdentityKeyPair.publicKey.serialize())
@@ -147,16 +148,9 @@ class X3DHKeyAgreement {
         theirIdentityKey: ECPublicKey,
         theirEphemeralKey: ECPublicKey
     ): ByteArray {
-        // 计算4个DH共享密钥（接收方的角色相反）
+        // 计算 DH 共享密钥（接收方的角色相反）
         // DH1 = DH(SPKB, IKA)
         val dh1 = Curve.calculateAgreement(theirIdentityKey, mySignedPreKey.privateKey)
-
-        // DH2 = DH(PKB, EKA) - 如果有一性预密钥
-        val dh2 = if (myPreKey != null) {
-            Curve.calculateAgreement(theirEphemeralKey, myPreKey.privateKey)
-        } else {
-            ByteArray(32)
-        }
 
         // DH3 = DH(IKB, EKA)
         val dh3 = Curve.calculateAgreement(theirEphemeralKey, myIdentityKeyPair.privateKey)
@@ -164,10 +158,18 @@ class X3DHKeyAgreement {
         // DH4 = DH(SPKB, EKA)
         val dh4 = Curve.calculateAgreement(theirEphemeralKey, mySignedPreKey.privateKey)
 
-        // 组合DH输出
-        val combinedDHSecret = combineDHOutputs(dh1, dh2, dh3, dh4)
+        // 组合 DH 输出
+        // 如果有一性预密钥，使用 4 个 DH 输出；否则使用 3 个 DH 输出
+        val combinedDHSecret = if (myPreKey != null) {
+            // DH2 = DH(PKB, EKA)
+            val dh2 = Curve.calculateAgreement(theirEphemeralKey, myPreKey.privateKey)
+            combineDHOutputs(dh1, dh2, dh3, dh4)
+        } else {
+            // 没有预密钥时，只使用 3 个 DH 输出（不使用零值）
+            combineDHOutputs(dh1, dh3, dh4)
+        }
 
-        // 使用HKDF派生共享密钥
+        // 使用 HKDF 派生共享密钥
         return hkdf(combinedDHSecret, theirIdentityKey.serialize())
     }
 
@@ -185,31 +187,46 @@ class X3DHKeyAgreement {
     }
 
     /**
-     * HKDF密钥派生函数
+     * HKDF 密钥派生函数 (RFC 5869)
+     * 使用标准 HMAC-SHA256 实现
      */
     private fun hkdf(inputKeyMaterial: ByteArray, info: ByteArray): ByteArray {
-        // Extract
-        val hash = MessageDigest.getInstance("SHA-256")
-        val prk = hash.digest(inputKeyMaterial)
+        // Extract 阶段：PRK = HMAC-Hash(salt, IKM)
+        val salt = ByteArray(32) // 使用 SHA-256 输出长度作为 salt
+        SecureRandom().nextBytes(salt)
+        val prk = hmacSha256(salt, inputKeyMaterial)
 
-        // Expand
-        val t = ByteArray(MESSAGE_KEY_LENGTH + CHAIN_KEY_LENGTH)
-        var offset = 0
+        // Expand 阶段：OKM = T(1) | T(2) | T(3) | ...
+        val outputLength = MESSAGE_KEY_LENGTH + CHAIN_KEY_LENGTH
+        val n = (outputLength + 31) / 32 // 需要迭代的次数
+        val okm = ByteArray(outputLength)
+        
+        var t = ByteArray(0)
         var counter: Byte = 1
-
-        while (offset < t.size) {
-            val hmacInput = ByteArray(hash.digest(prk).size + info.size + 1)
-            System.arraycopy(hash.digest(prk), 0, hmacInput, 0, hash.digest(prk).size)
-            System.arraycopy(info, 0, hmacInput, hash.digest(prk).size, info.size)
+        
+        for (i in 0 until n) {
+            // T(i) = HMAC-Hash(PRK, T(i-1) | info | i)
+            val hmacInput = ByteArray(t.size + info.size + 1)
+            System.arraycopy(t, 0, hmacInput, 0, t.size)
+            System.arraycopy(info, 0, hmacInput, t.size, info.size)
             hmacInput[hmacInput.size - 1] = counter
-
-            val output = hash.digest(hmacInput)
-            System.arraycopy(output, 0, t, offset, minOf(output.size, t.size - offset))
-            offset += output.size
+            
+            t = hmacSha256(prk, hmacInput)
+            System.arraycopy(t, 0, okm, i * 32, minOf(32, outputLength - i * 32))
             counter++
         }
 
-        return t
+        return okm
+    }
+
+    /**
+     * HMAC-SHA256 实现
+     */
+    private fun hmacSha256(key: ByteArray, data: ByteArray): ByteArray {
+        val mac = javax.crypto.Mac.getInstance("HmacSHA256")
+        val secretKey = javax.crypto.spec.SecretKeySpec(key, "HmacSHA256")
+        mac.init(secretKey)
+        return mac.doFinal(data)
     }
 
     /**
