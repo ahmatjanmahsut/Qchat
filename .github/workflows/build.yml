@@ -24,8 +24,7 @@ jobs:
       - name: Build Android App
         run: |
           ls -la
-          chmod +x ./gradlew || true
-          ./gradlew :android:build --no-daemon
+          gradle :android:build --no-daemon
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -49,8 +48,7 @@ jobs:
       - name: Build Backend
         run: |
           ls -la
-          chmod +x ./gradlew || true
-          ./gradlew :backend:build --no-daemon
+          gradle :backend:build --no-daemon
       
       - name: Upload Backend Artifact
         uses: actions/upload-artifact@v4
@@ -74,10 +72,8 @@ jobs:
       
       - name: Run Android Tests
         run: |
-          chmod +x ./gradlew || true
-          ./gradlew :android:test --no-daemon
+          gradle :android:test --no-daemon
       
       - name: Run Backend Tests
         run: |
-          chmod +x ./gradlew || true
-          ./gradlew :backend:test --no-daemon
+          gradle :backend:test --no-daemon
