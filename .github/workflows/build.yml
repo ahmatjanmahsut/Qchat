@@ -24,6 +24,8 @@ jobs:
       - name: Build Android App
         run: |
           ls -la
+          ls -la android/
+          gradle projects
           gradle :android:app:build --no-daemon
       
       - name: Upload APK
@@ -48,6 +50,7 @@ jobs:
       - name: Build Backend
         run: |
           ls -la
+          gradle projects
           gradle :backend:build --no-daemon
       
       - name: Upload Backend Artifact
