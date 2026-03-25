@@ -21,14 +21,9 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.5
-
       - name: Generate Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.5
+          gradle wrapper --gradle-version 8.5 --no-daemon
           chmod +x gradlew
 
       - name: Build Android Debug APK
@@ -62,14 +57,9 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.5
-
       - name: Generate Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.5
+          gradle wrapper --gradle-version 8.5 --no-daemon
           chmod +x gradlew
 
       - name: Build Backend
@@ -98,14 +88,9 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.5
-
       - name: Generate Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.5
+          gradle wrapper --gradle-version 8.5 --no-daemon
           chmod +x gradlew
 
       - name: Run Android Unit Tests
@@ -125,14 +110,9 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.5
-
       - name: Generate Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.5
+          gradle wrapper --gradle-version 8.5 --no-daemon
           chmod +x gradlew
 
       - name: Run Backend Tests
@@ -151,14 +131,9 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.5
-
       - name: Generate Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 8.5
+          gradle wrapper --gradle-version 8.5 --no-daemon
           chmod +x gradlew
 
       - name: Run Kotlin Linter (Android)
