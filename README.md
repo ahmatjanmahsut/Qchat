@@ -75,6 +75,18 @@
 - **AES-256-GCM** - 军事级消息加密
 - **Ed25519签名** - 消息完整性和真实性验证
 - **本地密钥存储** - Android Keystore安全存储
+- **环境变量配置** - 敏感信息通过环境变量管理，避免硬编码
+- **JWT 安全验证** - 完整的令牌验证机制，包括过期时间和颁发者检查
+- **日志脱敏** - 用户敏感信息哈希化后再记录
+
+### 最近的更新
+
+✅ **2024-03-25 安全更新**:
+- 修复了配置文件中的硬编码密钥问题
+- 使用标准 RFC 5869 实现 HKDF 密钥派生
+- 修复 X3DH 实现中的安全漏洞
+- 加强 JWT 验证机制
+- 优化 CORS 配置
 
 ## 📁 项目结构
 
@@ -120,14 +132,45 @@ Qchat/
 ```bash
 cd backend
 
-# 设置配置文件
-cp src/main/resources/application.conf.example src/main/resources/application.conf
-# 编辑 application.conf 配置数据库连接
+# 1. 配置环境变量
+# 复制环境变量模板
+cp .env.example .env
+# 编辑 .env 文件，设置你的数据库密码和 JWT 密钥
 
-# 构建并运行
+# 或者在命令行中设置环境变量
+export DB_URL="jdbc:postgresql://localhost:5432/qchat"
+export DB_USERNAME="postgres"
+export DB_PASSWORD="your_secure_password"
+export JWT_SECRET="your_random_generated_secret_at_least_32_chars"
+export CORS_ALLOWED_ORIGINS="http://localhost:3000,http://localhost:8080"
+
+# 2. 生成 JWT Secret（推荐）
+# macOS/Linux:
+openssl rand -base64 32
+# Windows (PowerShell):
+# [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }) -as [byte[]])
+
+# 3. 构建并运行
 ./gradlew build
 ./gradlew run
 ```
+
+### 环境变量配置说明
+
+| 环境变量 | 说明 | 默认值 |
+|----------|------|--------|
+| `DB_URL` | PostgreSQL 数据库连接 URL | `jdbc:postgresql://localhost:5432/qchat` |
+| `DB_USERNAME` | 数据库用户名 | `postgres` |
+| `DB_PASSWORD` | **数据库密码（必须修改）** | - |
+| `JWT_SECRET` | **JWT 签名密钥（必须修改）** | - |
+| `CORS_ALLOWED_ORIGINS` | 允许的跨域来源 | `http://localhost:3000,http://localhost:8080` |
+| `REDIS_HOST` | Redis 服务器地址 | `localhost` |
+| `REDIS_PORT` | Redis 端口 | `6379` |
+
+⚠️ **安全警告**：
+- 生产环境必须修改 `DB_PASSWORD` 和 `JWT_SECRET`
+- JWT Secret 应至少 32 个字符，建议使用 `openssl rand -base64 32` 生成
+- 不要将 `.env` 文件提交到版本控制
 
 ### 运行Android
 
