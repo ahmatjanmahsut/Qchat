@@ -26,13 +26,10 @@ jobs:
           gradle-version: 8.4
 
       - name: Build Android Debug APK
-        run: gradle :android:app:assembleDebug --stacktrace 2>&1 | tee build.log
+        run: gradle :android:app:assembleDebug --stacktrace
 
-      - name: Build Backend
-        run: gradle :backend:build --stacktrace 2>&1 | tee -a build.log
-
-      - name: Build Backend Shadow JAR
-        run: gradle :backend:shadowJar
+      - name: Build Backend JAR
+        run: gradle :backend:jar --stacktrace
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -44,11 +41,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: qchat-backend
-          path: backend/build/libs/*-all.jar
-
-      - name: Upload Build Log
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build.log
+          path: backend/build/libs/*.jar
