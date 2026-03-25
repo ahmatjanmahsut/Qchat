@@ -26,19 +26,37 @@ jobs:
           gradle-version: 8.4
 
       - name: Build Android Debug APK
-        run: gradle :android:app:assembleDebug --stacktrace
+        run: gradle :android:app:assembleDebug --stacktrace 2>&1 | tee build.log
+        continue-on-error: true
 
       - name: Build Backend JAR
-        run: gradle :backend:jar --stacktrace
+        run: gradle :backend:jar --stacktrace 2>&1 | tee -a build.log
+        continue-on-error: true
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: qchat-android-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload Backend JAR
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: qchat-backend
           path: backend/build/libs/*.jar
+
+      - name: Upload Build Log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-log
+          path: build.log
+
+      - name: Check build result
+        run: |
+          if grep -q "BUILD FAILED" build.log; then
+            echo "Build failed, check build-log artifact for details"
+            exit 1
+          fi
