@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("io.ktor.plugin") version "2.3.6"
+    application
 }
 
 group = "com.qchat.backend"
