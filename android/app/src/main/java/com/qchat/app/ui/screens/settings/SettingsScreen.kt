@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -35,7 +35,7 @@ fun SettingsScreen(navController: NavController) {
                     description = "管理后端服务器连接",
                     onClick = { navController.navigate("server_config") }
                 )
-                Divider()
+                HorizontalDivider()
             }
 
             item {
@@ -44,7 +44,7 @@ fun SettingsScreen(navController: NavController) {
                     description = "个人资料和隐私",
                     onClick = { /* 导航到账户设置 */ }
                 )
-                Divider()
+                HorizontalDivider()
             }
 
             item {
@@ -53,7 +53,7 @@ fun SettingsScreen(navController: NavController) {
                     description = "管理消息通知",
                     onClick = { /* 导航到通知设置 */ }
                 )
-                Divider()
+                HorizontalDivider()
             }
 
             item {
@@ -62,7 +62,7 @@ fun SettingsScreen(navController: NavController) {
                     description = "隐私和安全选项",
                     onClick = { /* 导航到隐私设置 */ }
                 )
-                Divider()
+                HorizontalDivider()
             }
 
             item {
