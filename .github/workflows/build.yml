@@ -31,14 +31,22 @@ jobs:
       - name: Build Backend JAR
         run: gradle :backend:jar --stacktrace
 
+      - name: List Android APK files
+        run: find android/app/build/outputs/apk -name "*.apk" || echo "No APK files found"
+
+      - name: List Backend JAR files
+        run: find backend/build/libs -name "*.jar" || echo "No JAR files found"
+
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: qchat-android-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
 
       - name: Upload Backend JAR
         uses: actions/upload-artifact@v4
         with:
           name: qchat-backend
           path: backend/build/libs/*.jar
+          if-no-files-found: warn
