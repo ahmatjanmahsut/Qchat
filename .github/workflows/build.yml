@@ -22,18 +22,23 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.4
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Debug - List files
+        run: ls -la
+
+      - name: Debug - Check gradlew
+        run: file gradlew
 
       - name: Build Android Debug APK
-        run: ./gradlew :android:app:assembleDebug --stacktrace
+        run: gradle :android:app:assembleDebug --stacktrace --info
 
       - name: Build Backend
-        run: ./gradlew :backend:build --stacktrace
+        run: gradle :backend:build --stacktrace
 
       - name: Build Backend Shadow JAR
-        run: ./gradlew :backend:shadowJar
+        run: gradle :backend:shadowJar
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
