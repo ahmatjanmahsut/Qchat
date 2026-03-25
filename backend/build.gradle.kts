@@ -1,6 +1,6 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.20"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.20"
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("io.ktor.plugin") version "2.3.6"
 }
