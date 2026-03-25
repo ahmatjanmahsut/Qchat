@@ -39,19 +39,19 @@ interface MessageDao {
     @Query("SELECT * FROM messages WHERE id = :messageId")
     fun getMessageByIdFlow(messageId: String): Flow<MessageEntity?>
 
-    @Query("SELECT * FROM messages WHERE sessionId = :sessionId ORDER BY timestamp ASC")
+    @Query("SELECT * FROM messages WHERE sessionId = :sessionId ORDER BY localTimestamp ASC")
     fun getMessagesBySessionFlow(sessionId: String): Flow<List<MessageEntity>>
 
-    @Query("SELECT * FROM messages WHERE sessionId = :sessionId ORDER BY timestamp DESC LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM messages WHERE sessionId = :sessionId ORDER BY localTimestamp DESC LIMIT :limit OFFSET :offset")
     suspend fun getMessagesBySessionPaginated(sessionId: String, limit: Int, offset: Int): List<MessageEntity>
 
-    @Query("SELECT * FROM messages WHERE sessionId = :sessionId AND timestamp < :beforeTimestamp ORDER BY timestamp DESC LIMIT :limit")
+    @Query("SELECT * FROM messages WHERE sessionId = :sessionId AND localTimestamp < :beforeTimestamp ORDER BY localTimestamp DESC LIMIT :limit")
     suspend fun getMessagesBefore(sessionId: String, beforeTimestamp: Long, limit: Int): List<MessageEntity>
 
-    @Query("SELECT * FROM messages WHERE sessionId = :sessionId AND timestamp > :afterTimestamp ORDER BY timestamp ASC LIMIT :limit")
+    @Query("SELECT * FROM messages WHERE sessionId = :sessionId AND localTimestamp > :afterTimestamp ORDER BY localTimestamp ASC LIMIT :limit")
     suspend fun getMessagesAfter(sessionId: String, afterTimestamp: Long, limit: Int): List<MessageEntity>
 
-    @Query("SELECT * FROM messages WHERE senderId = :senderId ORDER BY timestamp DESC")
+    @Query("SELECT * FROM messages WHERE senderId = :senderId ORDER BY localTimestamp DESC")
     fun getMessagesBySenderFlow(senderId: String): Flow<List<MessageEntity>>
 
     @Query("SELECT * FROM messages WHERE status = :status")
@@ -66,7 +66,7 @@ interface MessageDao {
     @Query("SELECT * FROM messages WHERE replyToMessageId = :messageId")
     fun getRepliesFlow(messageId: String): Flow<List<MessageEntity>>
 
-    @Query("SELECT * FROM messages WHERE sessionId = :sessionId AND deletedAt IS NULL ORDER BY timestamp DESC LIMIT 1")
+    @Query("SELECT * FROM messages WHERE sessionId = :sessionId AND deletedAt IS NULL ORDER BY localTimestamp DESC LIMIT 1")
     suspend fun getLastMessage(sessionId: String): MessageEntity?
 
     @Query("UPDATE messages SET status = :status WHERE id = :messageId")
@@ -108,19 +108,19 @@ interface MessageDao {
     @Query("""
         SELECT * FROM messages
         WHERE sessionId = :sessionId
-        AND timestamp BETWEEN :startTime AND :endTime
-        ORDER BY timestamp ASC
+        AND localTimestamp BETWEEN :startTime AND :endTime
+        ORDER BY localTimestamp ASC
     """)
     suspend fun getMessagesInTimeRange(sessionId: String, startTime: Long, endTime: Long): List<MessageEntity>
 
     @Query("""
         SELECT * FROM messages
         WHERE id NOT IN (
-            SELECT id FROM messages WHERE sessionId = :sessionId ORDER BY timestamp DESC LIMIT :excludeCount
+            SELECT id FROM messages WHERE sessionId = :sessionId ORDER BY localTimestamp DESC LIMIT :excludeCount
         )
         AND sessionId = :sessionId
         AND deletedAt IS NOT NULL
-        ORDER BY timestamp DESC
+        ORDER BY localTimestamp DESC
     """)
     suspend fun getDeletableMessages(sessionId: String, excludeCount: Int): List<MessageEntity>
 }

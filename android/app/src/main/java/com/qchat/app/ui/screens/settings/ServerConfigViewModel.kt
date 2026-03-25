@@ -11,8 +11,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
+import javax.inject.Inject
 
-class ServerConfigViewModel(
+class ServerConfigViewModel @Inject constructor(
     private val serverConfigManager: ServerConfigManager,
     private val userApi: UserApi
 ) : ViewModel() {
