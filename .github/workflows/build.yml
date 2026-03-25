@@ -20,16 +20,20 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle 8.4
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: '8.4'
+          gradle-version: 8.4
+          cache-read-only: false
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Build Android Debug APK
-        run: gradle :android:app:assembleDebug --no-daemon
+        run: ./gradlew :android:app:assembleDebug --no-daemon --stacktrace
 
       - name: Build Android Release APK
-        run: gradle :android:app:assembleRelease --no-daemon
+        run: ./gradlew :android:app:assembleRelease --no-daemon
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -55,16 +59,20 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle 8.4
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: '8.4'
+          gradle-version: 8.4
+          cache-read-only: false
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Build Backend
-        run: gradle :backend:build --no-daemon
+        run: ./gradlew :backend:build --no-daemon --stacktrace
 
       - name: Build Backend Shadow JAR
-        run: gradle :backend:shadowJar --no-daemon
+        run: ./gradlew :backend:shadowJar --no-daemon
 
       - name: Upload Backend JAR
         uses: actions/upload-artifact@v4
