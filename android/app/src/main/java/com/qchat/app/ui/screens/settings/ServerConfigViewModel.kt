@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 
 class ServerConfigViewModel(
     private val serverConfigManager: ServerConfigManager,
@@ -39,7 +40,7 @@ class ServerConfigViewModel(
                 }
                 val retrofit = Retrofit.Builder()
                     .baseUrl(_state.value.serverUrl)
-                    .addConverterFactory(json.asConverterFactory())
+                    .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
                     .build()
                 val testApi = retrofit.create(TestApi::class.java)
                 testApi.ping()
