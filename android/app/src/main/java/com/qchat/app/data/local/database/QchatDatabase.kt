@@ -28,7 +28,7 @@ import com.qchat.app.data.local.entity.UserEntity
         GroupMemberEntity::class,
         ContactEntity::class
     ],
-    version = 1,
+    version = 6,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

@@ -89,7 +89,7 @@ class MessageRepositoryImpl @Inject constructor(
                 Result.failure(Exception("Send failed: ${response.code()}"))
             }
         } catch (e: Exception) {
-            messageDao.updateStatus(message.messageId, MessageStatus.FAILED)
+            messageDao.updateStatus(message.id, MessageStatus.FAILED)
             Result.failure(e)
         }
     }
