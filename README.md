@@ -199,3 +199,7 @@ cd android
 ---
 
 **Qchat** - 让隐私回归聊天本质
+
+## 测试构建
+
+测试提交以触发GitHub Actions构建
