@@ -23,16 +23,11 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.4
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build Android Debug APK
-        run: ./gradlew :android:app:assembleDebug --stacktrace --info
+        run: ./gradlew :android:app:assembleDebug --stacktrace
 
       - name: List Android APK files
         run: find android/app/build/outputs -name "*.apk" || echo "No APK files found"
@@ -43,15 +38,6 @@ jobs:
           name: qchat-android-debug
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
-
-      - name: Upload Build Log
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-build-log
-          path: |
-            android/app/build/outputs/logs
-            android/app/build/reports
 
   build-backend:
     name: Build Backend
@@ -68,11 +54,6 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: 8.4
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -88,10 +69,3 @@ jobs:
           name: qchat-backend
           path: backend/build/libs/*.jar
           if-no-files-found: error
-
-      - name: Upload Build Log
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-build-log
-          path: backend/build/reports
