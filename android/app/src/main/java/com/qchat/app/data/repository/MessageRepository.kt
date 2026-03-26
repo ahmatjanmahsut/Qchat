@@ -85,7 +85,7 @@ class MessageRepositoryImpl @Inject constructor(
                 } ?: Result.failure(Exception("Empty response body"))
             } else {
                 // 更新状态为失败
-                messageDao.updateStatus(messageId, MessageStatus.FAILED)
+                messageDao.updateStatus(message.id, MessageStatus.FAILED)
                 Result.failure(Exception("Send failed: ${response.code()}"))
             }
         } catch (e: Exception) {
