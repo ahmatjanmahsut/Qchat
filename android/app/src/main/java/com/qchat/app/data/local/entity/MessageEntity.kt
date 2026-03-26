@@ -13,7 +13,7 @@ import androidx.room.PrimaryKey
     indices = [
         Index(value = ["sessionId"]),
         Index(value = ["senderId"]),
-        Index(value = ["timestamp"]),
+        Index(value = ["localTimestamp"]),
         Index(value = ["serverTimestamp"]),
         Index(value = ["syncStatus"])
     ],

@@ -282,7 +282,8 @@ class MessageHistorySyncerImpl @Inject constructor(
         localTimestamp = localTimestamp,
         serverTimestamp = serverTimestamp,
         version = version,
-        syncStatus = SyncStatus.SYNCED
+        syncStatus = SyncStatus.SYNCED,
+        retryCount = 0
     )
 
     companion object {
